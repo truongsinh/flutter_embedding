@@ -14,8 +14,11 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final EventChannel _eventChannel =
       const EventChannel('pro.truongsinh.flutter.android_flutter_host/event');
+  final MethodChannel _methodChannel =
+      const MethodChannel('pro.truongsinh.flutter.android_flutter_host/method');
   StreamSubscription<dynamic> _eventStreamSubscription;
   String _routeName = '';
+  dynamic _routeArgs;
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _MyAppState extends State<MyApp> {
         if (routeName is String) {
           setState(() {
             _routeName = routeName;
+            _routeArgs = event['route_args'];
           });
         }
       }
@@ -53,8 +57,17 @@ class _MyAppState extends State<MyApp> {
       case 'anotherRoute':
         return MaterialApp(
           home: Scaffold(
-            body: Center(
-              child: Text('This is another Flutter route'),
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text('This is another Flutter route with args $_routeArgs'),
+                RaisedButton(onPressed: () {
+                  _methodChannel.invokeMethod('navigatorPop', <String, dynamic>{
+                    "returnArg1": "val2",
+                    "returnArg2": 2,
+                  });
+                })
+              ],
             ),
           ),
         );
