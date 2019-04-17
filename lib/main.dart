@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart'
+    show getApplicationDocumentsDirectory;
 
 void main() => runApp(MyApp());
 
@@ -61,9 +63,10 @@ class _MyAppState extends State<MyApp> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Text('This is another Flutter route with args $_routeArgs'),
-                RaisedButton(onPressed: () {
+                RaisedButton(onPressed: () async {
                   _methodChannel.invokeMethod('navigatorPop', <String, dynamic>{
-                    "returnArg1": "val2",
+                    "returnArg1":
+                        (await getApplicationDocumentsDirectory()).path,
                     "returnArg2": 2,
                   });
                 })
