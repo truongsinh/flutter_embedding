@@ -1,26 +1,82 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() => runApp(MyApp());
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   // This widget is the root of your application.
   @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final EventChannel _eventChannel =
+      const EventChannel('pro.truongsinh.flutter.android_flutter_host/event');
+  StreamSubscription<dynamic> _eventStreamSubscription;
+  String _routeName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _routeName = window.defaultRouteName;
+    _eventStreamSubscription =
+        _eventChannel.receiveBroadcastStream().listen(_parseEventChannel);
+    if (_routeName == 'init') {
+      SystemNavigator.pop();
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _eventStreamSubscription.cancel();
+  }
+
+  void _parseEventChannel(dynamic event) {
+    if (event is Map) {
+      if (event.containsKey('initial_route')) {
+        dynamic routeName = event['initial_route'];
+        if (routeName is String) {
+          setState(() {
+            _routeName = routeName;
+          });
+        }
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or press Run > Flutter Hot Reload in a Flutter IDE). Notice that the
-        // counter didn't reset back to zero; the application is not restarted.
-        primarySwatch: Colors.blue,
-      ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+    switch (_routeName) {
+      case 'anotherRoute':
+        return MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: Text('This is another Flutter route'),
+            ),
+          ),
+        );
+      case 'counter':
+        return MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            // This is the theme of your application.
+            //
+            // Try running your application with "flutter run". You'll see the
+            // application has a blue toolbar. Then, without quitting the app, try
+            // changing the primarySwatch below to Colors.green and then invoke
+            // "hot reload" (press "r" in the console where you ran "flutter run",
+            // or press Run > Flutter Hot Reload in a Flutter IDE). Notice that the
+            // counter didn't reset back to zero; the application is not restarted.
+            primarySwatch: Colors.blue,
+          ),
+          home: MyHomePage(title: 'Flutter Demo Home Page'),
+        );
+      default:
+        return Container();
+    }
   }
 }
 
